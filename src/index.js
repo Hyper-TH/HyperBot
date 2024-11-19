@@ -1,19 +1,11 @@
-require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
-// const { token } = require('../config.js');
-
-const token = process.env.DISCORD_TOKEN;
+const { Client, Collection, GatewayIntentBits } = require('discord.js');
+const { token } = require('../config.json');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-client.once(Events.ClientReady, readyClient => {
-    console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-});
-
 client.commands = new Collection();
-
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
@@ -34,26 +26,26 @@ for (const folder of commandFolders) {
     }
 }
 
-client.on(Events.InteractionCreate, async interaction => {
-    if (!interaction.isChatInputCommand()) return;
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
-    const command = interaction.client.commands.get(interaction.commandName);
+for (const file of eventFiles) {
+	const filePath = path.join(eventsPath, file);
+    const event = require(filePath);
+    console.log("Hello");
+    console.log(`Loading event: ${file}`);
+    console.log(event); // Check the contents of the event object
 
-    if (!command) {
-        console.error(`No command matching ${interaction.commandName} was found.`);
+    if (!event || !event.name || typeof event.execute !== 'function') {
+        console.error(`Invalid event structure in file: ${file}`);
+        continue;
     }
-
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-        } else {
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-        }
-    }
-});
+    
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
+	}
+}
 
 client.login(token);
