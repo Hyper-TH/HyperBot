@@ -5,6 +5,10 @@ const levelSchema = new Schema({
         type: String,
         required: true
     },
+    userName: {
+        type: String,
+        required: true
+    },
     guildId: {
         type: String,
         require: true
