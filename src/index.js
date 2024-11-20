@@ -1,9 +1,28 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
-const { token } = require('../config.json');
+const { token, mongo_uri } = require('../config.json');
+const mongoose = require('mongoose');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ]
+});
+
+// Connect to MongoDB
+async function connectToDatabase() {
+    try {
+        await mongoose.connect(mongo_uri);
+
+        console.log('Connected to MongoDB successfully!');
+    } catch (error) {
+        console.error('Failed to connect to MongoDB:', error);
+        process.exit(1);
+    }
+}
 
 client.commands = new Collection();
 client.cooldowns = new Collection();
@@ -34,7 +53,6 @@ const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'
 for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
     const event = require(filePath);
-    console.log("Hello");
     console.log(`Loading event: ${file}`);
     console.log(event); // Check the contents of the event object
 
@@ -50,4 +68,7 @@ for (const file of eventFiles) {
 	}
 }
 
-client.login(token);
+(async () => {
+    await connectToDatabase();
+    client.login(token);
+})();
