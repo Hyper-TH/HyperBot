@@ -10,6 +10,8 @@ function getRandomXp(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// TODO: Make this cleaner
+// TODO: Have each event be a separate folder instead
 module.exports = {
     name: Events.MessageCreate,
     async execute(message) {
