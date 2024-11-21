@@ -32,7 +32,7 @@ module.exports = {
                 if (level) {
                     level.xp += xpToGive;
 
-                    await message.channel.send(`${user} you have received **${xpToGive} xp**.`);
+                    await message.channel.send(`${user} you received **${xpToGive} xp**.`);
 
                     if (level.xp > calculateLevelXp(level.level)) {
                         level.xp = 0;
