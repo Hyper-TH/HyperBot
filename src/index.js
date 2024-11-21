@@ -20,7 +20,7 @@ client.cooldowns = new Collection();
 const commandsPath = path.join(__dirname, 'commands');
 loadCommands(commandsPath, client);
 
-const eventsPath = path.join(__dirname, 'events/messageCreate');
+const eventsPath = path.join(__dirname, 'events');
 loadEvents(eventsPath, client);
 
 (async () => {
